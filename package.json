@@ -1,0 +1,10 @@
+{
+  "name": "kynos-raksha",
+  "version": "1.0.0",
+  "description": "QR-based Digital Identity and Management System for Stray and Community Dogs",
+  "scripts": {
+    "build": "echo Static build ready",
+    "dev": "powershell -ExecutionPolicy Bypass -File .\\serve.ps1",
+    "start": "powershell -ExecutionPolicy Bypass -File .\\serve.ps1"
+  }
+}
