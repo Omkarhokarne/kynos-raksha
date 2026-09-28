@@ -1,0 +1,10 @@
+# Vercel & Node
+node_modules/
+.vercel/
+
+# Sensitive local config (protect your Gmail App Password)
+data/email-config.json
+
+# OS files
+Thumbs.db
+.DS_Store

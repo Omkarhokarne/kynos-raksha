@@ -1,0 +1,10 @@
+{
+  "provider": "smtp",
+  "smtpServer": "smtp.gmail.com",
+  "smtpPort": 587,
+  "enableSsl": true,
+  "senderEmail": "omkarhokarne0@gmail.com",
+  "senderPassword": "cvtsvyyjgvlnbdvu",
+  "senderName": "Kynos Raksha Safety Team",
+  "instruction": "Gmail SMTP is active and authenticated. Real 6-digit OTP verification codes will be dispatched directly to each newly registering user's email address."
+}
