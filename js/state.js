@@ -667,10 +667,45 @@ class StateManager {
     this.listeners.forEach(cb => cb(event, payload));
   }
 
+  getDefaultDogPhoto(dog = {}) {
+    const color = (dog.coatColor || '').toLowerCase();
+    if (color.includes('black')) {
+      return 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=600&auto=format&fit=crop&q=80';
+    }
+    if (color.includes('white')) {
+      return 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=600&auto=format&fit=crop&q=80';
+    }
+    if (color.includes('brindle') || color.includes('brown')) {
+      return 'https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?w=600&auto=format&fit=crop&q=80';
+    }
+    if (color.includes('fawn') || color.includes('sand')) {
+      return 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&auto=format&fit=crop&q=80';
+    }
+    return 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&auto=format&fit=crop&q=80';
+  }
+
+  isValidPhoto(photo) {
+    if (!photo || typeof photo !== 'string') return false;
+    const p = photo.trim();
+    return p.startsWith('http://') || p.startsWith('https://') || p.startsWith('data:image/');
+  }
+
   // Dogs
   getDogs() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEYS.DOGS)) || [];
+      const dogs = JSON.parse(localStorage.getItem(STORAGE_KEYS.DOGS)) || [];
+      let updatedAny = false;
+      const sanitized = dogs.map(dog => {
+        if (!this.isValidPhoto(dog.photo)) {
+          dog.photo = this.getDefaultDogPhoto(dog);
+          updatedAny = true;
+        }
+        return dog;
+      });
+      if (updatedAny) {
+        localStorage.setItem(STORAGE_KEYS.DOGS, JSON.stringify(sanitized));
+      }
+      return sanitized;
     } catch(e) {
       return INITIAL_DOGS;
     }

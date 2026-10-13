@@ -3,8 +3,8 @@
   "smtpServer": "smtp.gmail.com",
   "smtpPort": 587,
   "enableSsl": true,
-  "senderEmail": "your-email@gmail.com",
-  "senderPassword": "xxxx xxxx xxxx xxxx",
+  "senderEmail": "omkarhokarne0@gmail.com",
+  "senderPassword": "hzne hcjt hcns jlno",
   "senderName": "Kynos Raksha Safety Team",
   "instruction": "Gmail SMTP configuration template. Use a 16-character Google App Password."
 }

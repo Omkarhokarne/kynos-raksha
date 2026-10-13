@@ -28,7 +28,7 @@
         "verified":  true,
         "otpVerified":  true,
         "createdAt":  "2026-09-01 10:30:00",
-        "lastLogin":  "2026-09-27 16:36:28"
+        "lastLogin":  "2026-10-06 12:11:30"
     },
     {
         "id":  "USR-VET-01",
@@ -106,7 +106,7 @@
         "verified":  true,
         "otpVerified":  true,
         "createdAt":  "2026-09-14 23:48:02",
-        "lastLogin":  "2026-09-27 14:51:38",
+        "lastLogin":  "2026-10-12 23:28:31",
         "lastOtpVerification":  "2026-09-14 23:48:49"
     },
     {
@@ -177,37 +177,20 @@
         "lastOtpVerification":  "2026-09-27 15:39:26"
     },
     {
-        "id":  "USR-20260927-160102",
+        "id":  "USR-20261013-000914",
         "name":  "gayathri hokarne",
         "email":  "gayathrihokarne@gmail.com",
-        "password":  "gayu@21",
-        "userType":  "public",
-        "userTypeTitle":  "Public User / Dog Guardian",
-        "organization":  "Community Member",
-        "licenseNo":  "",
+        "password":  "gayathri@21",
+        "userType":  "vet",
+        "userTypeTitle":  "Verified Veterinary Surgeon",
+        "organization":  "DL-VET-7890",
+        "licenseNo":  "DL-VET-7890",
         "phone":  "+919603880547",
         "avatar":  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
         "verified":  true,
         "otpVerified":  true,
-        "createdAt":  "2026-09-27 16:01:02",
-        "lastLogin":  "2026-09-27 16:01:26",
-        "lastOtpVerification":  "2026-09-27 16:01:26"
-    },
-    {
-        "id":  "USR-20260927-163327",
-        "name":  "omkar",
-        "email":  "hokarnelimbaji@gmail.com",
-        "password":  "Omkar@221",
-        "userType":  "public",
-        "userTypeTitle":  "Public User / Dog Guardian",
-        "organization":  "Community Member",
-        "licenseNo":  "",
-        "phone":  "+919603880547",
-        "avatar":  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
-        "verified":  true,
-        "otpVerified":  true,
-        "createdAt":  "2026-09-27 16:33:27",
-        "lastLogin":  "2026-09-27 16:33:46",
-        "lastOtpVerification":  "2026-09-27 16:33:46"
+        "createdAt":  "2026-10-13 00:09:14",
+        "lastLogin":  "2026-10-13 00:39:24",
+        "lastOtpVerification":  "2026-10-13 00:18:52"
     }
 ]

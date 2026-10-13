@@ -288,9 +288,18 @@ class KynosApplication {
     const bannerTitle = document.getElementById('otp-banner-title');
     const bannerText = document.getElementById('otp-banner-text');
 
-    if (bannerTitle) bannerTitle.textContent = "Security PIN Dispatched to Your Email";
+    if (bannerTitle) {
+      bannerTitle.textContent = challengeData.emailSent ? "Security PIN Dispatched to Your Gmail" : "Verification PIN Ready";
+    }
     if (bannerText) {
-      bannerText.textContent = `A one-time 6-digit registration verification PIN has been dispatched to ${challengeData.email}. Please check your email inbox and spam folder to enter the code.`;
+      if (challengeData.emailSent) {
+        bannerText.innerHTML = `A one-time 6-digit verification PIN has been sent to <strong>${challengeData.email}</strong>. Please check your Gmail inbox to enter the code.`;
+      } else if (challengeData.devOtp || challengeData.otpCode) {
+        const code = challengeData.devOtp || challengeData.otpCode;
+        bannerText.innerHTML = `Verification PIN for <strong>${challengeData.email}</strong>: <span style="font-family:monospace; font-weight:800; font-size:16px; color:#f97316; letter-spacing:2px; background:rgba(249,115,22,0.15); padding:2px 8px; border-radius:6px;">${code}</span><br><span style="font-size:11px; color:var(--text-muted); display:inline-block; margin-top:4px;">To send directly to Gmail inbox: configure your 16-char Google App Password in <code>data/email-config.json</code>.</span>`;
+      } else {
+        bannerText.textContent = `A one-time 6-digit registration verification PIN has been dispatched to ${challengeData.email}. Please check your Gmail inbox.`;
+      }
     }
 
     // Clear previous inputs
@@ -871,14 +880,11 @@ async handleGatewayRegister(e) {
           console.warn("Cloud Firestore user sync note:", err);
         });
 
-        // Register in Firebase Auth & dispatch Email verification
+        // Register in Firebase Auth (without sending external verification link)
         if (window.KynosFirebase.auth) {
           window.KynosFirebase.auth.createUserWithEmailAndPassword(email, password)
             .then(cred => {
-              if (cred && cred.user && cred.user.sendEmailVerification) {
-                cred.user.sendEmailVerification().catch(() => {});
-                console.log("✉️ Firebase verification email dispatched to:", email);
-              }
+              console.log("Firebase Auth user created:", cred.user ? cred.user.uid : "");
             })
             .catch(authErr => {
               console.log("Firebase Auth notice:", authErr.code || authErr.message);
@@ -1084,6 +1090,45 @@ async handleGatewayRegister(e) {
           inp.addEventListener('change', () => this.checkDuplicateOnRegistration());
         }
       });
+
+      // Dog Photo File Upload / Preview
+      const photoFileInput = document.getElementById('reg-dog-photo-file');
+      const photoUrlInput = document.getElementById('reg-dog-photo');
+      const previewWrap = document.getElementById('reg-photo-preview-wrap');
+      const previewImg = document.getElementById('reg-photo-preview-img');
+
+      if (photoFileInput) {
+        photoFileInput.addEventListener('change', (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              const dataUrl = ev.target.result;
+              if (photoUrlInput) photoUrlInput.value = dataUrl;
+              if (previewImg) previewImg.src = dataUrl;
+              if (previewWrap) previewWrap.style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+
+      if (photoUrlInput) {
+        photoUrlInput.addEventListener('input', (e) => {
+          const val = e.target.value.trim();
+          if (val) {
+            if (previewImg) {
+              previewImg.src = val;
+              previewImg.onerror = () => {
+                if (previewWrap) previewWrap.style.display = 'none';
+              };
+            }
+            if (previewWrap) previewWrap.style.display = 'flex';
+          } else {
+            if (previewWrap) previewWrap.style.display = 'none';
+          }
+        });
+      }
     }
 
     // Citizen Emergency SOS Form
@@ -1277,7 +1322,7 @@ async handleGatewayRegister(e) {
       return `
         <div class="dog-card ${isLost ? 'card-lost-tag' : ''}">
           <div class="card-img-wrap">
-            <img src="${dog.photo}" alt="${dog.name}" class="dog-card-img" loading="lazy">
+            <img src="${dog.photo}" alt="${dog.name}" class="dog-card-img" loading="lazy" onerror="this.onerror=null; this.src=window.KynosState.getDefaultDogPhoto({ coatColor: '${(dog.coatColor || '').replace(/'/g, "\\'")}', name: '${(dog.name || '').replace(/'/g, "\\'")}' });">
             <span class="dog-id-badge">${dog.id}</span>
             ${isLost ? '<span class="dog-lost-tag-pill">⚠️ QR TAG LOST</span>' : ''}
           </div>
@@ -1335,7 +1380,14 @@ async handleGatewayRegister(e) {
     // Populate Fields
     document.getElementById('modal-dog-name').textContent = dog.name;
     document.getElementById('modal-dog-id').textContent = dog.id;
-    document.getElementById('modal-dog-photo').src = dog.photo;
+    const modalPhoto = document.getElementById('modal-dog-photo');
+    if (modalPhoto) {
+      modalPhoto.src = dog.photo;
+      modalPhoto.onerror = function() {
+        this.onerror = null;
+        this.src = window.KynosState.getDefaultDogPhoto(dog);
+      };
+    }
     document.getElementById('modal-dog-breed').textContent = dog.breed;
     document.getElementById('modal-dog-gender').textContent = `${dog.gender} (${dog.approxAge}, ${dog.weight || '18 kg'})`;
     document.getElementById('modal-dog-color').textContent = dog.coatColor;
@@ -1688,7 +1740,7 @@ async handleGatewayRegister(e) {
                 ${m.score}% Match Confidence
               </div>
               <div class="candidate-header">
-                <img src="${dog.photo}" class="candidate-photo" alt="${dog.name}">
+                <img src="${dog.photo}" class="candidate-photo" alt="${dog.name}" onerror="this.onerror=null; this.src=window.KynosState.getDefaultDogPhoto(dog);">
                 <div class="candidate-meta">
                   <h3>${dog.name}</h3>
                   <div class="candidate-id">${dog.id}</div>
@@ -1794,7 +1846,7 @@ async handleGatewayRegister(e) {
     // Check RBAC permission
     if (!window.KynosRBAC.hasPermission('REGISTER_DOG')) {
       this.playSound('alert');
-      this.showToast("Permission Denied: Only Verified NGOs, Govt Officers, and Admins can create official Dog IDs.", "danger");
+      this.showToast("Permission Denied: Only Verified Veterinarians, NGOs, Govt Officers, and Admins can create official Dog IDs.", "danger");
       return;
     }
 
@@ -1814,7 +1866,9 @@ async handleGatewayRegister(e) {
       coatColor: document.getElementById('reg-dog-color').value.trim(),
       distinctMarkings: document.getElementById('reg-dog-markings').value.trim() || "None specified",
       earNotch: document.getElementById('reg-dog-earnotch').value,
-      photo: document.getElementById('reg-dog-photo').value.trim() || "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&auto=format&fit=crop&q=80",
+      photo: (document.getElementById('reg-dog-photo').value.trim() && window.KynosState.isValidPhoto(document.getElementById('reg-dog-photo').value.trim()))
+        ? document.getElementById('reg-dog-photo').value.trim()
+        : window.KynosState.getDefaultDogPhoto({ coatColor: document.getElementById('reg-dog-color').value, name: document.getElementById('reg-dog-name').value }),
       ward: document.getElementById('reg-dog-ward').value,
       city: city,
       territory: document.getElementById('reg-dog-territory').value.trim() || "Main Street",
@@ -2013,7 +2067,7 @@ async handleGatewayRegister(e) {
     container.innerHTML = dogs.map(dog => `
       <div class="adoption-card">
         <div class="adoption-img-wrap">
-          <img src="${dog.photo}" alt="${dog.name}" class="adoption-img">
+          <img src="${dog.photo}" alt="${dog.name}" class="adoption-img" onerror="this.onerror=null; this.src=window.KynosState.getDefaultDogPhoto(dog);">
           <span class="adoption-ready-badge">✓ Vaccinated & Sterilized</span>
         </div>
         <div class="adoption-body">
@@ -2041,7 +2095,14 @@ async handleGatewayRegister(e) {
 
     document.getElementById('adopt-modal-dog-name').textContent = dog.name;
     document.getElementById('adopt-modal-dog-id').textContent = dog.id;
-    document.getElementById('adopt-modal-photo').src = dog.photo;
+    const adoptPhoto = document.getElementById('adopt-modal-photo');
+    if (adoptPhoto) {
+      adoptPhoto.src = dog.photo;
+      adoptPhoto.onerror = function() {
+        this.onerror = null;
+        this.src = window.KynosState.getDefaultDogPhoto(dog);
+      };
+    }
     modal.classList.remove('modal-hidden');
   }
 

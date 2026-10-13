@@ -77,7 +77,7 @@ class MapAnalyticsManager {
 
       const popupHtml = `
         <div class="map-popup-card">
-          <img src="${dog.photo}" class="popup-dog-img" alt="${dog.name}">
+          <img src="${dog.photo}" class="popup-dog-img" alt="${dog.name}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&auto=format&fit=crop&q=80';">
           <div class="popup-dog-content">
             <h4>${dog.name} <span class="popup-id">${dog.id}</span></h4>
             <div class="popup-badges">

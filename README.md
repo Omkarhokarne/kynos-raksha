@@ -8,7 +8,7 @@
 
 ## 📌 Project Overview
 **Kynos Raksha** is a modern, responsive web application engineered to solve critical problems in community animal welfare:
-1. **Dog Artwork Background Theme**: Features the warm creamy aesthetic and ultra-sharp resting street dogs photo (`assets/creamy_pet_bg.jpg`) across all pages, panels, splash screen, and gateway card.
+1. **Exact Dark Glowing Grid Background Theme**: Features the deep dark canvas (`#09090b`), illuminated 30px SVG grid, and ambient glowing cyan/emerald spotlights (from pragnyanramtha.dev and portfolio) with frosted glassmorphism across all pages and gateway screens.
 2. **2-Second Motion Graphics Opening Screen**: Starts with a glowing animated geometric canine/QR shield, pulsating radar scan rings, app title **KYNOS RAKSHA**, and tagline **“Identify. Protect. Track. Care.”** with a 2-second progress timer and smooth transition.
 3. **Centered Entry Gateway with User Type Selection & QR Scanner**:
    - **Instant Dog Identification**: Scan dog QR code with live camera or 1-click test buttons (*Sheru*, *Bella*, *Kaalu*, *Rocky*) — completely accessible without needing to sign in.

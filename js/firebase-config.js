@@ -290,11 +290,7 @@ class FirebaseService {
     const userCredential = await this.auth.createUserWithEmailAndPassword(email, password);
     const firebaseUser = userCredential.user;
 
-    try {
-      await firebaseUser.sendEmailVerification();
-    } catch (e) {
-      console.warn("Email verification send notice:", e.message);
-    }
+    // Note: Do NOT call firebaseUser.sendEmailVerification() because it sends an external link to spam instead of the required 6-digit OTP code
 
     const profile = {
       uid: firebaseUser.uid,

@@ -306,9 +306,10 @@ while ($listener.IsListening) {
         Write-Host " [KYNOS RAKSHA 2FA OTP] Generated for $($matched.name) ($($matched.email)) -> PIN: $otp" -ForegroundColor Yellow
 
         # Dispatch real email to user
-        Send-OtpEmail $matched.email $matched.name $otp $matched.userTypeTitle
+        $emailRes = Send-OtpEmail $matched.email $matched.name $otp $matched.userTypeTitle
+        $emailSent = ($null -ne $emailRes -and $emailRes.success -eq $true)
 
-        Send-JsonResponse $response 200 @{ 
+        $respData = @{ 
             success = $true; 
             otpRequired = $true; 
             tempToken = $tempToken;
@@ -321,9 +322,15 @@ while ($listener.IsListening) {
             securityLevel = $secInfo.securityLevel;
             securityBadge = $secInfo.securityBadge;
             shieldIcon = $secInfo.shieldIcon;
+            emailSent = $emailSent;
             instruction = "Enter the 6-digit first-time activation PIN sent to your registered email ($($matched.email)).";
-            message = "First-time security verification PIN dispatched to $($matched.email). Please check your email inbox and spam folder."
+            message = if ($emailSent) { "First-time security verification PIN dispatched to $($matched.email). Please check your email inbox." } else { "Verification PIN generated for $($matched.email). Please check server console or enter code." }
         }
+        if (-not $emailSent) {
+            $respData["devOtp"] = $otp
+        }
+
+        Send-JsonResponse $response 200 $respData
         continue
     }
 
@@ -522,12 +529,13 @@ while ($listener.IsListening) {
         Write-Host " [KYNOS RAKSHA SECURITY OTP] Generated for $($newUser.name) ($($newUser.email)) -> PIN: $otp" -ForegroundColor Green
 
         # Dispatch real email to user's respective email
-        Send-OtpEmail $newUser.email $newUser.name $otp $newUser.userTypeTitle
+        $emailRes = Send-OtpEmail $newUser.email $newUser.name $otp $newUser.userTypeTitle
+        $emailSent = ($null -ne $emailRes -and $emailRes.success -eq $true)
 
         $rawPhone = $newUser.phone
         $maskedPhone = if ($rawPhone.Length -gt 6) { $rawPhone.Substring(0, [Math]::Min(5, $rawPhone.Length - 4)) + " *** " + $rawPhone.Substring($rawPhone.Length - 3) } else { $rawPhone }
 
-        Send-JsonResponse $response 201 @{ 
+        $respData = @{ 
             success = $true; 
             otpRequired = $true; 
             tempToken = $tempToken;
@@ -540,9 +548,15 @@ while ($listener.IsListening) {
             securityLevel = $secInfo.securityLevel;
             securityBadge = $secInfo.securityBadge;
             shieldIcon = $secInfo.shieldIcon;
+            emailSent = $emailSent;
             instruction = "Enter the 6-digit registration verification PIN sent to your registered email address ($($newUser.email)).";
-            message = "Registration verification PIN dispatched to $($newUser.email). Please enter the 6-digit code to activate your account." 
+            message = if ($emailSent) { "Registration verification PIN dispatched to $($newUser.email). Please check your email inbox." } else { "Registration verification PIN generated for $($newUser.email). Please check server console or enter code." }
         }
+        if (-not $emailSent) {
+            $respData["devOtp"] = $otp
+        }
+
+        Send-JsonResponse $response 201 $respData
         continue
     }
 
