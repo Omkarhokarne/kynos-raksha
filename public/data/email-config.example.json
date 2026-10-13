@@ -1,0 +1,10 @@
+{
+  "provider": "smtp",
+  "smtpServer": "smtp.gmail.com",
+  "smtpPort": 587,
+  "enableSsl": true,
+  "senderEmail": "omkarhokarne0@gmail.com",
+  "senderPassword": "hzne hcjt hcns jlno",
+  "senderName": "Kynos Raksha Safety Team",
+  "instruction": "Gmail SMTP configuration template. Use a 16-character Google App Password."
+}

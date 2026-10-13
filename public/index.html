@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kynos Raksha - Dog Digital Identity & Welfare System</title>
+  <meta name="description" content="QR-based Digital Identity and Management System for Stray and Community Dogs. One Dog, One ID, One QR Code, One Digital History.">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+
+  <!-- Core Application Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Exact Background Grid & Glow (from pragnyanramtha.dev & portfolio) -->
+  <div class="site-bg-glow-spotlights" aria-hidden="true">
+    <div class="spotlight-radial-1"></div>
+    <div class="spotlight-radial-2"></div>
+    <div class="spotlight-radial-3"></div>
+  </div>
+  <svg class="site-bg-grid" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <pattern id="site-grid" width="30" height="30" patternUnits="userSpaceOnUse">
+        <path d="M 30 0 L 0 0 0 30" fill="none" stroke="currentColor" stroke-width="0.5"></path>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#site-grid)" x="-1" y="-1"></rect>
+  </svg>
+
+  <!-- Toast Notification Hub -->
+  <div id="toast-container"></div>
+
+  <!-- =====================================================================
+       1. INTRO / SPLASH SCREEN WITH MOTION GRAPHICS (2 SECONDS)
+       Shows unique logo with ONLY name of app and tagline, 2s timer & smooth exit
+       ===================================================================== -->
+  <div id="splash-screen">
+    <div class="splash-fx-bg"></div>
+    <button class="splash-skip-btn" onclick="window.KynosApp.hideSplashScreen()">Skip Intro ✕</button>
+
+    <div class="splash-radar-container">
+      <div class="radar-ring radar-ring-1"></div>
+      <div class="radar-ring radar-ring-2"></div>
+      <div class="radar-ring radar-ring-3"></div>
+      <div class="splash-logo-center">
+        <img src="assets/logo.png" alt="Kynos Raksha Logo" class="splash-logo-img">
+      </div>
+    </div>
+
+    <div class="splash-text-col">
+      <h1 class="splash-app-name">KYNOS RAKSHA</h1>
+      <div class="splash-tagline">“Every stray has an identity. Every life has a protector.”</div>
+      <div class="splash-timer-container">
+        <div class="splash-timer-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Root Container (Can be toggled to mobile phone frame) -->
+  <div id="app-root-container">
+
+    <!-- =====================================================================
+         2. CENTERED ENTRY GATEWAY (LOGIN, REGISTER & SCAN QR TO IDENTIFY DOG)
+         Appears in middle of page immediately after 2-second splash screen
+         ===================================================================== -->
+    <div id="gateway-screen">
+      
+      <!-- VIEW 1: HERO & DIRECT QR SCANNER (DEFAULT ENTRY) -->
+      <div id="gateway-hero-view" class="gateway-hero-layout">
+        <!-- Top Bar with Logo, Tagline, and Corner Sign In Button -->
+        <header class="gateway-top-bar">
+          <div class="gateway-brand-badge">
+            <img src="assets/logo.png" alt="Kynos Logo" class="gateway-logo-img">
+            <div>
+              <h2 class="gateway-brand-title">KYNOS RAKSHA</h2>
+              <span class="gateway-brand-sub">Community Dog Digital Identity & Welfare Network</span>
+            </div>
+          </div>
+
+          <!-- Side Corner Action Button to Access Portal Login / Register -->
+          <div class="gateway-corner-action">
+            <button type="button" class="btn-corner-auth" onclick="window.KynosApp.toggleGatewayAuth(true)">
+              <span>🔑 Sign In / Register</span>
+              <span class="corner-arrow">→</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Main Hero Showcase -->
+        <div class="gateway-hero-card">
+          <div class="hero-logo-center-wrap">
+            <img src="assets/logo.png" alt="Kynos Raksha Logo" class="hero-brand-logo-large">
+          </div>
+
+          <div class="hero-mission-capsule">
+            <span>🐾</span> National Dog Welfare & Rabies Eradication
+          </div>
+
+          <h1 class="hero-main-title">KYNOS RAKSHA</h1>
+          <p class="hero-primary-tagline">“Every stray has an identity. Every life has a protector.”</p>
+          <p class="hero-secondary-desc">
+            One Dog • One Unique ID • One QR Code • One Permanent Digital History.
+            <br>
+            Point your camera at any community dog's collar QR tag below to instantly access verified vaccination status, sterilization records, and caregiver contacts.
+          </p>
+
+          <!-- PROMINENT SCAN DOG QR SPOTLIGHT (Directly Accessible Without Login) -->
+          <div class="gateway-scanner-spotlight-box">
+            <div class="scanner-spotlight-header">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 24px;">📷</span>
+                <div>
+                  <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-main);">Instant Collar QR Tag Scanner</h3>
+                  <span style="font-size: 11px; color: var(--primary); font-weight: 700; letter-spacing: 0.5px;">PUBLIC ACCESS • NO SIGN IN REQUIRED</span>
+                </div>
+              </div>
+              <span class="scanner-ready-badge">🟢 Camera Ready</span>
+            </div>
+
+            <!-- Primary Action Buttons: Live Camera Scan & Photo Upload -->
+            <div class="scanner-spotlight-actions">
+              <button type="button" class="btn btn-primary btn-hero-scan" onclick="window.KynosApp.openScannerModal()">
+                <span style="font-size: 1.3rem;">📷</span>
+                <span>Open Live Camera Scanner</span>
+              </button>
+              <button type="button" class="btn btn-outline btn-hero-upload" onclick="document.getElementById('gateway-scanner-file-input').click()">
+                <span style="font-size: 1.2rem;">📁</span>
+                <span>Upload QR Photo</span>
+              </button>
+              <input type="file" id="gateway-scanner-file-input" accept="image/*" capture="environment" style="display: none;" onchange="window.KynosApp.handleScannerFileUpload(this.files[0])">
+            </div>
+
+            <!-- Manual Dog ID Search Bar -->
+            <div class="gateway-manual-search-row">
+              <label style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+                Or Enter Dog Tag ID / Paste Link:
+              </label>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="gateway-manual-tag-input" class="form-control" placeholder="e.g. KYN-DEL-2025-0012 or paste QR link" onkeypress="if(event.key==='Enter') window.KynosApp.handleGatewayManualLookup()">
+                <button type="button" class="btn btn-primary" onclick="window.KynosApp.handleGatewayManualLookup()" style="white-space: nowrap; padding: 0 18px; font-weight: 700;">
+                  🔍 Identify Dog
+                </button>
+              </div>
+            </div>
+
+            <!-- Sample Profile Test Chips -->
+            <div class="gateway-sample-chips-row">
+              <span class="test-chips-label">Instant Test Samples:</span>
+              <button type="button" class="test-chip-btn" onclick="window.KynosApp.quickScanFromGateway('KYN-DEL-2025-0012')">🐕 Sheru (Active)</button>
+              <button type="button" class="test-chip-btn" onclick="window.KynosApp.quickScanFromGateway('KYN-DEL-2025-0045')">🐕 Bella (Active)</button>
+              <button type="button" class="test-chip-btn" onclick="window.KynosApp.quickScanFromGateway('KYN-DEL-2026-0089')">🐕 Kaalu (Active)</button>
+              <button type="button" class="test-chip-btn" onclick="window.KynosApp.quickScanFromGateway('KYN-DEL-2026-0210')">🐕 Rocky (Active)</button>
+            </div>
+          </div>
+
+          <!-- Bottom Footer Navigation helper -->
+          <div class="hero-bottom-portal-bar">
+            <span>Are you an authorized Veterinarian, NGO coordinator, Municipal officer, or Feeder?</span>
+            <button type="button" class="btn-text-portal-link" onclick="window.KynosApp.toggleGatewayAuth(true)">
+              Sign In to Your Official Portal Account →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: AUTHENTICATION CARD (LOGIN & REGISTER) -->
+      <div id="gateway-auth-view" class="gateway-auth-layout d-none">
+        <div class="gateway-center-card">
+          <!-- Back button to return to public scanner -->
+          <div class="gateway-auth-top-nav">
+            <button type="button" class="btn-back-to-scanner" onclick="window.KynosApp.toggleGatewayAuth(false)">
+              ← Back to Public Scanner
+            </button>
+            <span class="auth-mode-indicator">PORTAL AUTHENTICATION</span>
+          </div>
+
+          <!-- Gateway Header with Logo & Tagline -->
+          <div class="gateway-header">
+            <div class="gateway-brand-badge">
+              <img src="assets/logo.png" alt="Kynos Logo" class="gateway-logo-img">
+              <h2 class="gateway-brand-title">KYNOS RAKSHA</h2>
+            </div>
+            <p class="gateway-tagline">“Every stray has an identity. Every life has a protector.”</p>
+            <div id="cloud-db-status" class="cloud-status-badge cloud-local" style="margin: 4px auto 8px auto; width: fit-content; display: inline-block;">
+              🛡️ Checking Cloud Database...
+            </div>
+          </div>
+
+          <!-- Gateway Auth Tabs: Sign In vs Register -->
+          <div class="gateway-tabs-bar">
+            <button class="gateway-tab-toggle active" id="btn-tab-signin" onclick="window.KynosApp.switchGatewayTab('signin')">Sign In to Portal</button>
+            <button class="gateway-tab-toggle" id="btn-tab-register" onclick="window.KynosApp.switchGatewayTab('register')">New Registration</button>
+          </div>
+
+          <!-- Form Container -->
+          <div class="gateway-form-container">
+            
+            <!-- TAB A: SIGN IN -->
+            <div id="gateway-panel-signin">
+              <form id="gateway-login-form" onsubmit="window.KynosApp.handleGatewayLogin(event)">
+                <div class="form-group" style="margin-bottom: 14px;">
+                  <label style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>1. User Type / Role (Optional)</span>
+                    <span style="font-size: 10.5px; color: var(--primary); font-weight: 700;">AUTO-DETECTS FROM ACCOUNT</span>
+                  </label>
+                  <select id="login-usertype" class="form-select" onchange="window.KynosApp.onLoginUserTypeChanged(this.value)">
+                    <option value="auto" selected>✨ Auto-Detect Registered Role (Recommended)</option>
+                    <option value="public">👤 Public User / Citizen / Dog Lover</option>
+                    <option value="volunteer">🤝 Community Volunteer / Feeder</option>
+                    <option value="vet">🩺 Verified Veterinary Surgeon (Vet)</option>
+                    <option value="ngo">🏢 Verified Animal Welfare Organization (NGO)</option>
+                    <option value="govt">🏛️ Authorized Municipal / Government Officer</option>
+                    <option value="admin">👑 Chief System Administrator</option>
+                  </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 14px;">
+                  <label>2. Your Registered Email Address *</label>
+                  <input type="email" id="login-email" class="form-control" placeholder="Enter your registered email (e.g. name@domain.com)" required>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label>3. Password *</label>
+                    <span style="font-size: 11px; color: var(--text-muted);">Verified against backend database</span>
+                  </div>
+                  <input type="password" id="login-password" class="form-control" placeholder="Enter your password" required>
+                </div>
+
+                <!-- Real-time Login Authentication Error Banner -->
+                <div id="login-error-alert" class="d-none" style="background: rgba(239, 68, 68, 0.16); border: 1px solid rgba(239, 68, 68, 0.55); color: #fecaca; padding: 12px 14px; margin-bottom: 16px; border-radius: var(--radius-sm); font-size: 12.5px; line-height: 1.45; text-align: left;">
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="btn-login-submit" style="width: 100%; padding: 13px; font-size: 14.5px;">
+                  🔐 Authenticate & Enter Dashboard →
+                </button>
+
+                <div style="margin-top: 14px; padding: 10px; background: rgba(194, 65, 12, 0.08); border: 1px dashed rgba(194, 65, 12, 0.3); border-radius: var(--radius-sm); font-size: 11.5px; color: var(--text-secondary); text-align: center;">
+                  <strong>Database Verified:</strong> OTP verification is only required once during first-time registration.
+                  <br>
+                  Don't have an account yet? <a href="javascript:void(0)" onclick="window.KynosApp.switchGatewayTab('register')" style="color: var(--primary); font-weight: 700;">Click here to Register</a>.
+                </div>
+
+                <a class="gateway-guest-link" onclick="window.KynosApp.continueAsGuest()">
+                  Or Continue as Public Guest (Scan & View permitted info only) →
+                </a>
+              </form>
+            </div>
+
+            <!-- TAB B: REGISTER -->
+            <div id="gateway-panel-register" class="d-none">
+              <form id="gateway-register-form" onsubmit="window.KynosApp.handleGatewayRegister(event)">
+                <div id="register-error-alert" class="d-none" style="background: rgba(239, 68, 68, 0.16); border: 1px solid rgba(239, 68, 68, 0.55); color: #fecaca; padding: 12px 14px; margin-bottom: 14px; border-radius: var(--radius-sm); font-size: 12.5px; line-height: 1.45; text-align: left;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 12px;">
+                  <label>Full Name / Organization Name *</label>
+                  <input type="text" id="reg-user-name" class="form-control" required placeholder="e.g. Dr. Sunita Rao / Hope Animal Shelter">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 12px;">
+                  <label>Account Role *</label>
+                  <select id="reg-user-role" class="form-select" required onchange="window.KynosApp.toggleRegExtraFields(this.value)">
+                    <option value="public">Public Citizen / Dog Lover</option>
+                    <option value="volunteer">Community Feeder & Volunteer</option>
+                    <option value="vet">Verified Veterinarian (Requires Council Reg #)</option>
+                    <option value="ngo">Animal Welfare NGO / Shelter</option>
+                    <option value="govt">Municipal / Government Officer</option>
+                  </select>
+                </div>
+
+                <div id="reg-extra-vet" class="form-group d-none" style="margin-bottom: 12px;">
+                  <label>Veterinary Council Registration No. *</label>
+                  <input type="text" id="reg-user-vetid" class="form-control" placeholder="e.g. DL-VET-7890">
+                </div>
+
+                <div id="reg-extra-ngo" class="form-group d-none" style="margin-bottom: 12px;">
+                  <label>NGO Trust / Society Registration No. *</label>
+                  <input type="text" id="reg-user-ngoid" class="form-control" placeholder="e.g. DEL-TRUST-2024-99">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 12px;">
+                  <label>Email Address (For Account Security & Verification) *</label>
+                  <input type="email" id="reg-user-email" class="form-control" required placeholder="name@domain.com">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 12px;">
+                  <label>Create Password *</label>
+                  <input type="password" id="reg-user-password" class="form-control" required placeholder="Choose a password (min 4 chars)" minlength="4">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                  <label>Mobile Phone Number (For SMS Security Verification) *</label>
+                  <input type="tel" id="reg-user-phone" class="form-control" required placeholder="+91 98...">
+                </div>
+
+                <button type="submit" class="btn btn-success" style="width: 100%; padding: 13px;">
+                  Create Account &amp; Dispatch Security Verification PIN →
+                </button>
+              </form>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         3. MAIN APPLICATION SHELL (NAVBAR + TAB PANELS)
+         Unveils smoothly when user authenticates or continues from gateway
+         ===================================================================== -->
+    <div id="main-app-shell" class="d-none">
+
+      <!-- Top Navigation & Role Bar -->
+      <header class="kynos-navbar">
+        <div class="navbar-container">
+          <div class="brand-wrap" onclick="window.KynosApp.switchTab('home')">
+            <div class="brand-emblem">
+              <img src="assets/logo.png" alt="Kynos Logo" class="navbar-logo-img">
+            </div>
+            <div class="brand-text-col">
+              <h1>KYNOS RAKSHA</h1>
+              <span class="brand-tagline">“Every stray has an identity. Every life has a protector.”</span>
+            </div>
+          </div>
+
+          <nav class="nav-links-wrap">
+            <button class="nav-tab-btn nav-link-active" data-nav-tab="home">🏠 Overview</button>
+            <button class="nav-tab-btn" data-nav-tab="dogs">📋 Dog Registry</button>
+            <button class="nav-tab-btn" data-nav-tab="lost-tag-recovery" style="color: #fbbf24;">🔍 Lost Tag Recovery</button>
+            <button class="nav-tab-btn" data-nav-tab="register-dog" data-perm="REGISTER_DOG">➕ Register Dog</button>
+            <button class="nav-tab-btn" data-nav-tab="reports">🚨 Emergency SOS</button>
+            <button class="nav-tab-btn" data-nav-tab="adoptions">💛 Adopt</button>
+            <button class="nav-tab-btn" data-nav-tab="gis-map">🗺️ GIS Map</button>
+            <button class="nav-tab-btn" data-nav-tab="analytics" data-perm="VIEW_WARD_ANALYTICS">📊 Municipal KPIs</button>
+            <button class="nav-tab-btn" data-nav-tab="admin" data-perm="ADMIN_PORTAL">⚙️ Admin</button>
+          </nav>
+
+          <!-- Right Action Cluster: User Profile Security & Gateway Exit -->
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <!-- Cloud Firestore Connection Badge -->
+            <span class="cloud-db-status-badge cloud-status-badge cloud-local" style="font-size: 11px; padding: 4px 9px;">
+              🛡️ Local DB
+            </span>
+
+            <!-- Authenticated Profile Capsule (Locked to User Identity) -->
+            <div class="user-role-capsule" onclick="window.KynosApp.openUserProfileModal()" title="View Authenticated Profile & Security Status">
+              <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" id="header-user-avatar" class="header-user-avatar user-avatar-img" alt="User Avatar">
+              <div class="header-user-meta">
+                <span class="header-user-name user-display-name" id="header-user-name">Aarav Sharma</span>
+                <span class="role-pill role-pill-public active-role-indicator" id="current-role-badge">PUBLIC USER</span>
+              </div>
+              <span class="security-verified-tag" style="font-size: 11px; color: #10b981; font-weight: 700; display: flex; align-items: center; gap: 4px; padding: 2px 8px; background: rgba(16, 185, 129, 0.12); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.25);">
+                🔒 2FA Verified
+              </span>
+            </div>
+
+            <!-- Return to Login / Gateway Button -->
+            <button class="btn-gateway-exit" onclick="window.KynosApp.exitToGateway()" title="Sign Out & Return to Login Gateway">
+              🚪 Sign Out
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Container -->
+      <main class="app-container">
+
+        <!-- Phone Mode Switcher Bar (Quick tactile mode switching for mobile / phone viewport) -->
+        <div class="phone-mode-switcher-bar" id="phone-mode-switcher-bar">
+          <button class="phone-mode-pill active" data-mode-tab="home" onclick="window.KynosApp.switchTab('home')">
+            <span>🏠 Feed</span>
+          </button>
+          <button class="phone-mode-pill" data-mode-tab="dogs" onclick="window.KynosApp.switchTab('dogs')">
+            <span>🐕 Registry</span>
+          </button>
+          <button class="phone-mode-pill phone-mode-pill-scan" onclick="window.KynosApp.openScannerModal()">
+            <span>📷 Instant Scan</span>
+          </button>
+          <button class="phone-mode-pill" data-mode-tab="reports" onclick="window.KynosApp.switchTab('reports')">
+            <span>🚨 SOS Alert</span>
+          </button>
+          <button class="phone-mode-pill" data-mode-tab="gis-map" onclick="window.KynosApp.switchTab('gis-map')">
+            <span>🗺️ Map</span>
+          </button>
+        </div>
+
+      <!-- ===================================================================
+           TAB 1: HOME & HERO OVERVIEW
+           =================================================================== -->
+      <section id="tab-home" class="app-tab-panel">
+        <div class="hero-banner">
+          <div class="hero-split-grid">
+            <div class="hero-content">
+              <div class="hero-badge">
+                <span>●</span> Verified Digital Identity Platform
+              </div>
+              <h2 class="hero-title">KYNOS RAKSHA</h2>
+              <div class="hero-tagline">“Identify. Protect. Track. Care.”</div>
+              <p class="hero-desc">
+                Transforming stray and community dog welfare through permanent digital QR identities.
+                <strong>One Dog → One Unique ID → One QR Code → One Digital History.</strong> 
+                Eliminating duplicate captures, preventing repeated rabies vaccinations, and connecting 
+                citizens with animal welfare organizations.
+              </p>
+              <div class="hero-actions">
+                <button class="btn btn-primary" onclick="window.KynosApp.openScannerModal()">
+                  📷 Scan Dog QR Code
+                </button>
+                <button class="btn btn-danger" onclick="window.KynosApp.switchTab('reports')">
+                  🚨 Report Injured / Emergency Dog
+                </button>
+                <button class="btn btn-outline" onclick="window.KynosApp.switchTab('lost-tag-recovery')">
+                  🔍 Lost QR Tag Recovery
+                </button>
+                <button class="btn btn-outline" onclick="window.KynosApp.switchTab('dogs')">
+                  Browse Community Dogs
+                </button>
+              </div>
+            </div>
+            <div class="hero-banner-visual">
+              <div class="hero-img-card">
+                <img src="assets/puppy_banner.jpg" alt="Community Dogs" class="hero-banner-img">
+                <div class="hero-img-overlay-tag">
+                  <span class="hero-tag-icon">🐾</span>
+                  <div>
+                    <strong style="color: #fff; font-size: 12px; display: block;">Humane Stray Welfare</strong>
+                    <span style="color: #94a3b8; font-size: 11px;">100% Auditable Community Care</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Impact Metrics -->
+        <div class="metric-grid">
+          <div class="metric-card">
+            <div class="metric-icon-box icon-cyan">🐕</div>
+            <div>
+              <div class="metric-value" id="stat-hero-dogs">5</div>
+              <div class="metric-label">Registered Community Dogs</div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon-box icon-green">✂️</div>
+            <div>
+              <div class="metric-value" id="stat-hero-sterilized">100%</div>
+              <div class="metric-label">Sterilized (ABC Rate)</div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon-box icon-amber">💉</div>
+            <div>
+              <div class="metric-value" id="stat-hero-rabies">80%</div>
+              <div class="metric-label">Rabies Vaccine Coverage</div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon-box icon-red">🚑</div>
+            <div>
+              <div class="metric-value" id="stat-hero-rescues">1</div>
+              <div class="metric-label">Active Rescue Dispatches</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role Architecture Visualizer (Immutable Role Governance) -->
+        <div class="recovery-banner" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px 22px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+            <h3 style="color: var(--primary); margin: 0; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+              <span>🛡️</span> Strict Role-Based Access Control (RBAC) Governance
+            </h3>
+            <span class="role-pill role-pill-ngo" style="font-size: 11px;">IMMUTABLE ROLE ISOLATION</span>
+          </div>
+          <p style="margin-bottom: 14px; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+            Individual security barriers protect community dog medical health data. Once authenticated, user roles are strictly locked to their registered credentials. 
+            Public citizens can scan QR tags and view public care dossiers, verified veterinarians log clinical surgeries and vaccines, authorized NGOs manage tag issuance and ambulance dispatches, and Municipal officers view ward GIS analytics.
+          </p>
+          <div class="rbac-role-summary-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px;">
+            <div style="background: var(--bg-surface-elevated); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <strong style="font-size: 12px; color: var(--text-main); display: block;">👥 Public Citizen</strong>
+              <span style="font-size: 11px; color: var(--text-secondary);">Scan tags, file SOS reports, view public dog dossier.</span>
+            </div>
+            <div style="background: var(--bg-surface-elevated); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <strong style="font-size: 12px; color: var(--text-main); display: block;">🐾 Feeder &amp; Volunteer</strong>
+              <span style="font-size: 11px; color: var(--text-secondary);">Territory pack logs, daily feeding schedule tracking.</span>
+            </div>
+            <div style="background: var(--bg-surface-elevated); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <strong style="font-size: 12px; color: var(--text-main); display: block;">🩺 Veterinary Surgeon</strong>
+              <span style="font-size: 11px; color: var(--text-secondary);">Authorized rabies vaccine &amp; ABC sterilization logging.</span>
+            </div>
+            <div style="background: var(--bg-surface-elevated); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <strong style="font-size: 12px; color: var(--text-main); display: block;">🏢 Animal Welfare NGO</strong>
+              <span style="font-size: 11px; color: var(--text-secondary);">Official Dog ID issuance, collar tags, ambulance dispatch.</span>
+            </div>
+            <div style="background: var(--bg-surface-elevated); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <strong style="font-size: 12px; color: var(--text-main); display: block;">🏛️ Municipal Officer</strong>
+              <span style="font-size: 11px; color: var(--text-secondary);">Ward density GIS maps, sterilization census KPIs.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 2: DOG REGISTRY DIRECTORY
+           =================================================================== -->
+      <section id="tab-dogs" class="app-tab-panel panel-hidden">
+        <div class="section-header-bar">
+          <div>
+            <h2 class="section-title">Community Dog Registry</h2>
+            <p class="section-subtitle">Verified digital identities, ear-notch verification, and vaccination histories.</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div class="search-input-wrap">
+              <span class="search-icon-abs">🔍</span>
+              <input type="text" id="dog-search-input" class="search-input" placeholder="Search by name, Dog ID, or ward..." oninput="window.KynosApp.renderDogList(this.value)">
+            </div>
+            <button class="btn btn-primary btn-sm" data-perm="REGISTER_DOG" onclick="window.KynosApp.switchTab('register-dog')">
+              ➕ Register Dog
+            </button>
+          </div>
+        </div>
+
+        <div class="dog-grid" id="dogs-grid-container">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 3: LOST QR TAG RECOVERY & DUPLICATE PREVENTION STUDIO
+           (Feature requested in user review comment)
+           =================================================================== -->
+      <section id="tab-lost-tag-recovery" class="app-tab-panel panel-hidden">
+        <div class="recovery-banner">
+          <h3>🔍 Lost QR Code Recovery & Duplicate Prevention Studio</h3>
+          <p>
+            When a community dog loses its collar or ear tag, do <strong>NOT</strong> create a duplicate record.
+            Enter observed physical traits (coat pattern, gender, ear notch, and ward) to search and match existing database dossiers.
+            Once verified, the original permanent Dog ID is restored and a replacement QR tag can be printed immediately!
+          </p>
+        </div>
+
+        <form id="lost-tag-search-form" class="recovery-form-grid">
+          <div class="form-group">
+            <label>Observed Gender</label>
+            <select id="lost-gender" class="form-select">
+              <option value="Any">Any Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Coat Color / Tone</label>
+            <select id="lost-color" class="form-select">
+              <option value="Any">Any Coat Color</option>
+              <option value="Tan">Tan / Golden Brown</option>
+              <option value="White">White with Brown Patches</option>
+              <option value="Black">Solid Black / Dark</option>
+              <option value="Fawn">Fawn / Light Sand</option>
+              <option value="Brindle">Brindle / Dark Brown</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Ear-Notch Observation</label>
+            <select id="lost-earnotch" class="form-select">
+              <option value="Any">Any / Unknown</option>
+              <option value="Right">Right Ear V-Notch (Male ABC)</option>
+              <option value="Left">Left Ear V-Notch (Female ABC)</option>
+              <option value="None">No Notch (Intact)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Territory / Ward Sighted</label>
+            <select id="lost-ward" class="form-select">
+              <option value="Any">Any Municipal Ward</option>
+              <option value="Ward 42">Ward 42 - South Delhi (Hauz Khas)</option>
+              <option value="Ward 38">Ward 38 - Central Delhi (Defence Colony)</option>
+              <option value="Ward 12">Ward 12 - NDMC (Connaught Place)</option>
+              <option value="Ward 40">Ward 40 - South Central (Lodhi Colony)</option>
+              <option value="Ward 45">Ward 45 - South Delhi (Saket)</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Distinct Physical Markings (e.g. "white paws", "black muzzle", "floppy ear", "chest shield")</label>
+            <input type="text" id="lost-markings" class="form-control" placeholder="Type visible descriptors separated by commas...">
+          </div>
+
+          <div style="grid-column: 1 / -1; display: flex; gap: 12px;">
+            <button type="submit" class="btn btn-primary">
+              🔍 Run Trait Matching Algorithm
+            </button>
+            <button type="button" class="btn btn-outline" onclick="document.getElementById('lost-color').value='Brindle'; document.getElementById('lost-earnotch').value='Right'; document.getElementById('lost-gender').value='Male'; window.KynosApp.handleLostTagSearch();">
+              ⚡ Test Scenario: Search for "Rocky" (Tag Lost in Saket)
+            </button>
+          </div>
+        </form>
+
+        <div id="lost-tag-results-container">
+          <!-- Search match results appear here -->
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 4: REGISTER NEW DOG & GENERATE OFFICIAL QR (RBAC Gated)
+           =================================================================== -->
+      <section id="tab-register-dog" class="app-tab-panel panel-hidden">
+        <div class="section-header-bar">
+          <div>
+            <h2 class="section-title">Official Dog Registration & QR Generation</h2>
+            <p class="section-subtitle">Restricted to Verified Veterinarians, Welfare NGOs, Municipal Officers, and System Administrators.</p>
+          </div>
+        </div>
+
+        <div id="reg-duplicate-alert" class="recovery-banner d-none" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;"></div>
+
+        <form id="register-dog-form" class="recovery-banner" style="background: var(--bg-surface); border-color: var(--border-subtle);">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-bottom: 20px;">
+            <div class="form-group">
+              <label>Dog Name / Territory Moniker *</label>
+              <input type="text" id="reg-dog-name" class="form-control" required placeholder="e.g. Moti, Bagheera, Daisy">
+            </div>
+
+            <div class="form-group">
+              <label>Breed / Mix *</label>
+              <input type="text" id="reg-dog-breed" class="form-control" value="Desi / Indian Pariah Dog" required>
+            </div>
+
+            <div class="form-group">
+              <label>Gender *</label>
+              <select id="reg-dog-gender" class="form-select" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Approximate Age</label>
+              <input type="text" id="reg-dog-age" class="form-control" placeholder="e.g. 2.5 Years">
+            </div>
+
+            <div class="form-group">
+              <label>Weight (approx)</label>
+              <input type="text" id="reg-dog-weight" class="form-control" placeholder="e.g. 19 kg">
+            </div>
+
+            <div class="form-group">
+              <label>Coat Color & Pattern *</label>
+              <input type="text" id="reg-dog-color" class="form-control" required placeholder="e.g. Tan with White Chest Patch">
+            </div>
+
+            <div class="form-group">
+              <label>Municipal Ward *</label>
+              <select id="reg-dog-ward" class="form-select" required>
+                <option value="Ward 42 - South Delhi">Ward 42 - South Delhi (Hauz Khas)</option>
+                <option value="Ward 38 - Central Delhi">Ward 38 - Central Delhi (Defence Colony)</option>
+                <option value="Ward 12 - NDMC Zone">Ward 12 - NDMC (Connaught Place)</option>
+                <option value="Ward 40 - South Central">Ward 40 - South Central (Lodhi Colony)</option>
+                <option value="Ward 45 - South Delhi">Ward 45 - South Delhi (Saket)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Territory Landmark / Street</label>
+              <input type="text" id="reg-dog-territory" class="form-control" placeholder="e.g. Near Community Center Gate 1">
+            </div>
+
+            <div class="form-group">
+              <label>Sterilization & Ear Notch Marker</label>
+              <select id="reg-dog-earnotch" class="form-select">
+                <option value="Right Ear V-Notch (Male Sterilized)">Right Ear V-Notch (Male Sterilized)</option>
+                <option value="Left Ear V-Notch (Female Sterilized)">Left Ear V-Notch (Female Sterilized)</option>
+                <option value="None (Intact / Unsterilized)">None (Intact / Unsterilized)</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label>Dog Photo (Upload from Phone/PC or Paste URL)</label>
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <input type="file" id="reg-dog-photo-file" accept="image/*" class="form-control" style="flex: 1; min-width: 200px;">
+                <input type="text" id="reg-dog-photo" class="form-control" placeholder="Or paste image URL (https://...)" style="flex: 2; min-width: 250px;">
+              </div>
+              <div id="reg-photo-preview-wrap" style="margin-top: 8px; display: none; align-items: center; gap: 10px;">
+                <img id="reg-photo-preview-img" src="" alt="Dog Preview" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-subtle);">
+                <span style="font-size: 12px; color: var(--accent-emerald);">✓ Photo ready</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Community Feeder Name</label>
+              <input type="text" id="reg-dog-feeder" class="form-control" placeholder="Primary Feeder / Caregiver">
+            </div>
+
+            <div class="form-group">
+              <label>Feeder Contact Phone</label>
+              <input type="tel" id="reg-dog-feeder-phone" class="form-control" placeholder="+91 98...">
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label>Distinct Physical Markings & Identification Features</label>
+              <textarea id="reg-dog-markings" class="form-control" rows="2" placeholder="e.g. Curled tail, black spots on tongue, white front right paw..."></textarea>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 12px;">
+            <button type="reset" class="btn btn-outline">Reset Form</button>
+            <button type="submit" class="btn btn-primary" data-perm="REGISTER_DOG">
+              ✨ Issue Official Dog ID & Generate QR Tag
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ===================================================================
+           TAB 5: EMERGENCY INCIDENT REPORTS (SOS)
+           =================================================================== -->
+      <section id="tab-reports" class="app-tab-panel panel-hidden">
+        <div class="section-header-bar">
+          <div>
+            <h2 class="section-title">Emergency Rescue & Welfare Incident Hub</h2>
+            <p class="section-subtitle">Public citizen reporting and live NGO ambulance dispatch pipeline.</p>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="document.getElementById('report-submission-card').scrollIntoView({ behavior: 'smooth' })">
+            + File New Emergency SOS
+          </button>
+        </div>
+
+        <!-- Live Queue Table -->
+        <div id="reports-table-container">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- Submission Card -->
+        <div id="report-submission-card" class="recovery-banner mt-4" style="background: var(--bg-surface); border-color: rgba(239, 68, 68, 0.3); margin-top: 32px;">
+          <h3 style="color: #f87171; margin-bottom: 12px;">🚨 Report an Injured / Sick / Missing Community Dog</h3>
+          <p style="margin-bottom: 20px;">Open to all citizens. Provide location and photo for rapid emergency response.</p>
+
+          <form id="citizen-sos-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+            <div class="form-group">
+              <label>Your Name *</label>
+              <input type="text" id="sos-name" class="form-control" required placeholder="Reporter Name">
+            </div>
+
+            <div class="form-group">
+              <label>Your Phone Number *</label>
+              <input type="tel" id="sos-phone" class="form-control" required placeholder="+91 98...">
+            </div>
+
+            <div class="form-group">
+              <label>Incident Severity *</label>
+              <select id="sos-severity" class="form-select" required>
+                <option value="Critical">Critical (Bleeding, Unconscious, Severe Trauma)</option>
+                <option value="High" selected>High (Hit-and-Run, Limping, Broken Bone)</option>
+                <option value="Medium">Medium (Maggot Wound, Open Sore, Eye Issue)</option>
+                <option value="Low">Low (Minor Skin Rash, General Welfare)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Incident Type *</label>
+              <select id="sos-type" class="form-select" required>
+                <option value="Hit-and-Run / Limping">Hit-and-Run / Limping</option>
+                <option value="Maggot Wound">Maggot Wound</option>
+                <option value="Skin Rash / Scratching">Skin Rash / Mange</option>
+                <option value="Missing Tagged Dog">Missing Tagged Dog</option>
+                <option value="Aggressive Dog Inquiry">Aggressive Pack / Rabies Suspicion</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Municipal Ward *</label>
+              <select id="sos-ward" class="form-select" required>
+                <option value="Ward 42 - South Delhi">Ward 42 - South Delhi</option>
+                <option value="Ward 38 - Central Delhi">Ward 38 - Central Delhi</option>
+                <option value="Ward 12 - NDMC Zone">Ward 12 - NDMC Zone</option>
+                <option value="Ward 40 - South Central">Ward 40 - South Central</option>
+                <option value="Ward 45 - South Delhi">Ward 45 - South Delhi</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Exact Location / Landmark *</label>
+              <input type="text" id="sos-location" class="form-control" required placeholder="e.g. Outside Metro Gate 3, near tea stall">
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label>GPS Coordinates</label>
+              <div style="display: flex; gap: 10px;">
+                <input type="text" id="sos-lat" class="form-control" placeholder="Latitude" value="28.5494">
+                <input type="text" id="sos-lng" class="form-control" placeholder="Longitude" value="77.2001">
+                <button type="button" id="btn-grab-gps" class="btn btn-outline" style="white-space: nowrap;">
+                  📍 Detect My GPS
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label>Photo Evidence URL</label>
+              <input type="url" id="sos-photo" class="form-control" value="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=600&auto=format&fit=crop&q=80">
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label>Description of Condition</label>
+              <textarea id="sos-desc" class="form-control" rows="2" placeholder="Describe symptoms, bleeding, dog's demeanor..."></textarea>
+            </div>
+
+            <div style="grid-column: 1 / -1;">
+              <button type="submit" class="btn btn-danger">
+                🚀 Dispatch Emergency Report to Nearest Welfare NGO
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 6: ADOPTIONS
+           =================================================================== -->
+      <section id="tab-adoptions" class="app-tab-panel panel-hidden">
+        <div class="section-header-bar">
+          <div>
+            <h2 class="section-title">Community Dogs Available for Adoption</h2>
+            <p class="section-subtitle">Fully vaccinated, sterilized, and temperament-verified Indies seeking loving homes.</p>
+          </div>
+        </div>
+
+        <div class="adoption-hero-banner">
+          <img src="assets/puppy_banner.jpg" alt="Puppies Banner" class="adoption-hero-img">
+          <div class="adoption-hero-content">
+            <div class="adoption-pill-tag">💛 FOREVER HOMES FOR DESI COMMUNITY DOGS</div>
+            <h3 class="adoption-hero-title">Give a Protected Indie Dog a Family</h3>
+            <p class="adoption-hero-text">
+              Every community dog in our registry is micro-tagged with a Kynos Digital Health QR, verified rabies vaccinated, sterilized, and cared for by local municipal feeders. Browse eligible companions below and submit your adoption interest.
+            </p>
+          </div>
+        </div>
+
+        <div class="dog-grid" id="adoptions-grid-container">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 7: GIS MAP
+           =================================================================== -->
+      <section id="tab-gis-map" class="app-tab-panel panel-hidden">
+        <div class="section-header-bar">
+          <div>
+            <h2 class="section-title">Interactive Ward GIS Map</h2>
+            <p class="section-subtitle">Territorial mapping of sterilized, vaccinated, and rescue cases across Delhi.</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-sm btn-outline" onclick="window.KynosMapAnalytics.renderMarkers('all')">All Markers</button>
+            <button class="btn btn-sm btn-outline" onclick="window.KynosMapAnalytics.renderMarkers('sterilized')">🟢 Sterilized</button>
+            <button class="btn btn-sm btn-outline" onclick="window.KynosMapAnalytics.renderMarkers('emergency')">🚨 Active Rescues</button>
+            <button class="btn btn-sm btn-outline" onclick="window.KynosMapAnalytics.renderMarkers('adoptable')">🔵 Adoptable</button>
+          </div>
+        </div>
+
+        <div id="kynos-gis-map"></div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 8: MUNICIPAL ANALYTICS
+           =================================================================== -->
+      <section id="tab-analytics" class="app-tab-panel panel-hidden">
+        <div class="section-header-bar">
+          <div>
+            <h2 class="section-title">Municipal Animal Birth Control & Rabies KPIs</h2>
+            <p class="section-subtitle">Auditable population health trends and WHO 70% herd immunity indicators.</p>
+          </div>
+          <button class="btn btn-sm btn-outline" data-perm="EXPORT_MUNICIPAL_REPORT" onclick="window.KynosApp.showToast('Municipal Audit Report exported as PDF/CSV.', 'success')">
+            📥 Export Official Ward Report
+          </button>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric-card">
+            <div class="metric-icon-box icon-cyan">🐕</div>
+            <div>
+              <div class="metric-value" id="kpi-total-dogs">--</div>
+              <div class="metric-label">Total Ward Census</div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon-box icon-green">✂️</div>
+            <div>
+              <div class="metric-value" id="kpi-sterilized-pct">--</div>
+              <div class="metric-label">ABC Sterilization Rate</div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon-box icon-amber">🛡️</div>
+            <div>
+              <div class="metric-value" id="kpi-rabies-pct">--</div>
+              <div class="metric-label">Rabies Coverage (Target ≥70%)</div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon-box icon-red">🚑</div>
+            <div>
+              <div class="metric-value" id="kpi-active-rescues">--</div>
+              <div class="metric-label">Cases in Treatment</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px; margin-top: 24px;">
+          <div class="recovery-banner" style="background: var(--bg-surface); border-color: var(--border-subtle); height: 360px; display: flex; flex-direction: column;">
+            <h4 style="margin-bottom: 12px; color: var(--text-main);">ABC & ARV Coverage by Municipal Ward</h4>
+            <div style="flex: 1; position: relative;">
+              <canvas id="chart-ward-coverage"></canvas>
+            </div>
+          </div>
+
+          <div class="recovery-banner" style="background: var(--bg-surface); border-color: var(--border-subtle); height: 360px; display: flex; flex-direction: column;">
+            <h4 style="margin-bottom: 12px; color: var(--text-main);">Rabies Herd Immunity Metric</h4>
+            <div style="flex: 1; position: relative;">
+              <canvas id="chart-rabies-target"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           TAB 9: ADMIN & AUDIT GOVERNANCE
+           =================================================================== -->
+      <section id="tab-admin" class="app-tab-panel panel-hidden">
+        <div class="section-header-bar">
+          <div>
+            <h2 class="section-title">Central Administrative Governance</h2>
+            <p class="section-subtitle">Immutable audit trail, account approvals, and duplicate resolution.</p>
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="window.KynosState.resetAllData(); window.location.reload();">
+            🔄 Reset Database to Seeds
+          </button>
+        </div>
+
+        <div class="recovery-banner" style="background: var(--bg-surface); border-color: var(--border-subtle);">
+          <h4 style="margin-bottom: 14px; color: var(--text-main);">System Activity Audit Trail</h4>
+          <div id="audit-log-container" class="table-responsive">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- =====================================================================
+         MOBILE PHONE DOCKED BOTTOM NAVIGATION (High-Grade Phone App Experience)
+         ===================================================================== -->
+    <nav class="mobile-phone-dock" id="mobile-phone-dock">
+      <button class="dock-item active" data-dock-tab="home" onclick="window.KynosApp.switchTab('home')">
+        <span class="dock-icon">🏠</span>
+        <span class="dock-text">Feed</span>
+      </button>
+      <button class="dock-item" data-dock-tab="dogs" onclick="window.KynosApp.switchTab('dogs')">
+        <span class="dock-icon">📋</span>
+        <span class="dock-text">Registry</span>
+      </button>
+      <button class="dock-item dock-item-scan" onclick="window.KynosApp.openScannerModal()" title="Scan Dog QR">
+        <div class="dock-scan-btn">
+          <span class="dock-scan-glow"></span>
+          <span class="dock-scan-icon">📷</span>
+        </div>
+        <span class="dock-text dock-scan-label">SCAN</span>
+      </button>
+      <button class="dock-item" data-dock-tab="reports" onclick="window.KynosApp.switchTab('reports')">
+        <span class="dock-icon">🚨</span>
+        <span class="dock-text">Rescue</span>
+      </button>
+      <button class="dock-item" onclick="window.KynosApp.openUserProfileModal()">
+        <span class="dock-icon">👤</span>
+        <span class="dock-text">Profile</span>
+      </button>
+    </nav>
+
+    </div><!-- /main-app-shell -->
+
+  </div><!-- /app-root-container -->
+
+  <!-- Device Toggle Bar (Switch between Phone App Shell and Desktop) -->
+  <div id="device-toggle-bar">
+    <button class="btn-device-toggle" id="btn-toggle-device-view">
+      📱 Switch to Mobile Phone Frame
+    </button>
+  </div>
+
+
+  <!-- =====================================================================
+       MODAL 1: QR CODE SCANNER (CAMERA, FILE UPLOAD, MANUAL ID & QUICK TEST)
+       ===================================================================== -->
+  <div id="qr-scanner-modal" class="modal-overlay modal-hidden">
+    <div class="modal-dialog modal-dialog-scanner">
+      <div class="modal-header">
+        <div>
+          <h3 style="margin: 0; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+            <span>📷</span> Scan &amp; Identify Community Dog
+          </h3>
+          <span style="font-size: 11px; color: var(--primary); font-weight: 600;">LIVE CAMERA • PHOTO UPLOAD • TAG ID SEARCH</span>
+        </div>
+        <button class="btn-close-modal" onclick="window.KynosApp.closeModal('qr-scanner-modal')">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 16px 20px;">
+
+        <!-- Live Camera Viewport with Viewfinder HUD -->
+        <div class="scanner-viewport-wrapper">
+          <div id="camera-stream-viewport"></div>
+          
+          <!-- Viewfinder Frame Overlay -->
+          <div class="scanner-hud-overlay" id="scanner-hud-overlay">
+            <div class="scanner-corner corner-tl"></div>
+            <div class="scanner-corner corner-tr"></div>
+            <div class="scanner-corner corner-bl"></div>
+            <div class="scanner-corner corner-br"></div>
+            <div class="scanner-laser-line" id="scanner-laser"></div>
+          </div>
+
+          <!-- Live Status Badge -->
+          <div class="scanner-status-badge" id="scanner-status-badge">
+            <span class="pulse-dot"></span> <span id="scanner-status-text">Starting Camera...</span>
+          </div>
+        </div>
+
+        <!-- Camera Controls Row -->
+        <div class="scanner-controls-row">
+          <select id="scanner-camera-select" class="form-select form-select-sm" style="display: none; max-width: 170px;" onchange="window.KynosApp.switchScannerCamera(this.value)">
+            <option value="">Default Camera</option>
+          </select>
+          <button type="button" class="btn btn-sm btn-outline" id="btn-restart-camera" onclick="window.KynosApp.restartScannerCamera()">
+            🔄 Restart Camera
+          </button>
+          <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('scanner-file-input').click()">
+            📁 Upload QR Photo
+          </button>
+          <input type="file" id="scanner-file-input" accept="image/*" capture="environment" style="display: none;" onchange="window.KynosApp.handleScannerFileUpload(this.files[0])">
+        </div>
+
+        <!-- Status / Guidance Message -->
+        <p id="scanner-result-message" class="scanner-instruction-msg">
+          Align dog's collar QR tag inside the frame. The camera decodes automatically.
+        </p>
+
+        <!-- Alternative 1: Direct Tag ID Search -->
+        <div class="scanner-manual-box">
+          <label style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+            Or Enter Dog ID / Paste QR Link:
+          </label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="manual-scan-tag-input" class="form-control" placeholder="e.g. KYN-DEL-2025-0012 or paste link" onkeypress="if(event.key==='Enter') window.KynosApp.handleManualTagLookup()">
+            <button type="button" class="btn btn-primary" onclick="window.KynosApp.handleManualTagLookup()" style="white-space: nowrap; padding: 0 16px;">
+              🔍 Identify Dog
+            </button>
+          </div>
+        </div>
+
+        <!-- Alternative 2: 1-Click Sample Test Buttons -->
+        <div class="scanner-sample-section">
+          <p style="font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 8px; letter-spacing: 0.5px; text-transform: uppercase;">
+            Or Quick Test Sample Official Profiles:
+          </p>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
+            <button type="button" class="btn btn-xs btn-outline" onclick="window.KynosApp.simulateScanDog('KYN-DEL-2025-0012')">🐕 Sheru (Active)</button>
+            <button type="button" class="btn btn-xs btn-outline" onclick="window.KynosApp.simulateScanDog('KYN-DEL-2025-0045')">🐕 Bella (Active)</button>
+            <button type="button" class="btn btn-xs btn-outline" onclick="window.KynosApp.simulateScanDog('KYN-DEL-2026-0089')">🐕 Kaalu (Active)</button>
+            <button type="button" class="btn btn-xs btn-outline" onclick="window.KynosApp.simulateScanDog('KYN-DEL-2026-0104')">🐕 Champa (Lost Tag)</button>
+            <button type="button" class="btn btn-xs btn-outline" onclick="window.KynosApp.simulateScanDog('KYN-DEL-2026-0210')">🐕 Rocky (Active)</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =====================================================================
+       MODAL 2: DOG PROFILE DOSSIER (ONE DOG -> ONE DIGITAL HISTORY)
+       ===================================================================== -->
+  <div id="dog-profile-modal" class="modal-overlay modal-hidden">
+    <div class="modal-dialog modal-dialog-wide">
+      <div class="modal-header">
+        <div>
+          <h3>Digital Identity Dossier</h3>
+          <span style="font-size: 11px; color: var(--primary);">ONE DOG → ONE UNIQUE ID → ONE QR CODE</span>
+        </div>
+        <button class="btn-close-modal" onclick="window.KynosApp.closeModal('dog-profile-modal')">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div id="modal-lost-tag-alert" class="recovery-banner d-none" style="background: rgba(245, 158, 11, 0.2); border-color: #f59e0b; color: #fef08a; padding: 12px 16px; margin-bottom: 16px;">
+          <strong>⚠️ Tag Status: Reported Lost in Field.</strong> Authorized personnel can re-issue this tag using the Lost Tag Recovery module.
+        </div>
+
+        <div class="profile-dossier-grid">
+          <!-- Sidebar / Photo & QR -->
+          <div class="dossier-sidebar">
+            <img src="" id="modal-dog-photo" class="dossier-photo" alt="Dog Photo">
+            <div class="dossier-qr-box" id="modal-qr-preview-box"></div>
+            <button class="btn btn-sm btn-outline" style="width: 100%;" onclick="window.KynosApp.openPrintableTagModal(window.KynosApp.selectedDog.id)">
+              🏷️ View & Print Collar Tag
+            </button>
+          </div>
+
+          <!-- Main Dossier Data -->
+          <div class="dossier-main">
+            <div class="dossier-title-row">
+              <div>
+                <h2 class="dossier-dog-name" id="modal-dog-name">Dog Name</h2>
+                <div class="dossier-dog-id" id="modal-dog-id">KYN-XXX-0000</div>
+              </div>
+              <div id="modal-dog-breed" style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">Desi Indie</div>
+            </div>
+
+            <!-- Trait Grid -->
+            <table class="dossier-trait-table">
+              <tr>
+                <td>Gender & Age:</td>
+                <td id="modal-dog-gender">--</td>
+              </tr>
+              <tr>
+                <td>Coat Color:</td>
+                <td id="modal-dog-color">--</td>
+              </tr>
+              <tr>
+                <td>Markings:</td>
+                <td id="modal-dog-markings">--</td>
+              </tr>
+              <tr>
+                <td>Ear Notch:</td>
+                <td id="modal-dog-notch">--</td>
+              </tr>
+              <tr>
+                <td>Territory:</td>
+                <td id="modal-dog-territory">--</td>
+              </tr>
+              <tr>
+                <td>Feeder / Caregiver:</td>
+                <td id="modal-dog-feeder">--</td>
+              </tr>
+              <tr>
+                <td>Temperament:</td>
+                <td id="modal-dog-temperament">--</td>
+              </tr>
+              <tr>
+                <td>Registered By:</td>
+                <td id="modal-dog-registered">--</td>
+              </tr>
+            </table>
+
+            <!-- Sterilization Verification -->
+            <div id="modal-steril-info"></div>
+
+            <!-- Vaccination Section -->
+            <div id="modal-vax-history"></div>
+
+            <!-- Medical History Timeline -->
+            <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <h4 style="font-size: 15px;">Veterinary Clinical Timeline</h4>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn btn-sm btn-outline-success" data-role-guard="vet,admin" onclick="window.KynosApp.showAddVaccineModal(window.KynosApp.selectedDog.id)">
+                    + Log Vaccine
+                  </button>
+                </div>
+              </div>
+              <div id="modal-med-timeline"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =====================================================================
+       MODAL 3: PRINTABLE COLLAR TAG STUDIO
+       ===================================================================== -->
+  <div id="printable-tag-modal" class="modal-overlay modal-hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>🏷️ Official Collar Tag & Printable Studio</h3>
+        <button class="btn-close-modal" onclick="window.KynosApp.closeModal('printable-tag-modal')">&times;</button>
+      </div>
+      <div class="modal-body" style="background: #f4ede4; text-align: center; padding: 28px 16px;">
+        <div id="printable-tag-render-target"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="window.KynosApp.closeModal('printable-tag-modal')">Close</button>
+        <button class="btn btn-primary" onclick="window.KynosApp.triggerPrint()">🖨️ Print Collar Tag (PDF)</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =====================================================================
+       MODAL 4: AUTHENTICATED USER SECURITY PROFILE (ROLE ISOLATED)
+       ===================================================================== -->
+  <div id="user-profile-modal" class="modal-overlay modal-hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h3>🛡️ Authenticated Profile &amp; Security</h3>
+          <span style="font-size: 11px; color: var(--primary); font-weight: 700;">ACTIVE VERIFIED CREDENTIALS</span>
+        </div>
+        <button class="btn-close-modal" onclick="window.KynosApp.closeModal('user-profile-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Active User Profile Card from Database -->
+        <div id="session-user-card" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px;">
+          <div style="display: flex; gap: 14px; align-items: center;">
+            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" id="session-user-avatar" class="header-user-avatar user-avatar-img" style="width: 54px; height: 54px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover;" alt="Avatar">
+            <div style="flex: 1;">
+              <h4 id="session-user-name" class="user-display-name" style="font-size: 17px; font-weight: 800; margin-bottom: 2px;">User Name</h4>
+              <div id="session-user-email" style="font-size: 12.5px; color: var(--primary); font-family: monospace;">user@kynos.org</div>
+              <div style="display: flex; gap: 6px; align-items: center; margin-top: 6px; flex-wrap: wrap;">
+                <span id="session-user-role-badge" class="role-pill role-pill-ngo active-role-indicator">VERIFIED NGO</span>
+                <span id="session-org-badge" style="font-size: 11px; color: var(--text-muted); background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 10px;">Organization Member</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2FA OTP Safety Status Box -->
+        <div class="profile-security-box" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span style="font-size: 18px;">🔒</span>
+            <strong style="color: #10b981; font-size: 13.5px;">Multi-Factor OTP Safety Verification Active</strong>
+          </div>
+          <p style="font-size: 12px; color: var(--text-secondary); margin: 0; line-height: 1.5;">
+            This session is cryptographically bound to your registered credentials and individual role OTP clearance.
+          </p>
+          <div style="margin-top: 8px; font-size: 11.5px; color: var(--text-muted); display: flex; justify-content: space-between;">
+            <span>Security Status: <strong style="color: #10b981;">Authorized &amp; Verified</strong></span>
+            <span id="profile-last-login-time">Session: Active</span>
+          </div>
+        </div>
+
+        <!-- Strict Role Isolation Advisory -->
+        <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 18px;">
+          <div style="display: flex; gap: 8px; align-items: flex-start;">
+            <span style="font-size: 16px;">⚠️</span>
+            <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.45;">
+              <strong style="color: #fbbf24;">Role Switching Is Restricted:</strong>
+              To prevent unauthorized changes to rabies vaccinations, dog registries, and municipal dispatch, users cannot switch roles in an active session. To change accounts, please sign out.
+            </div>
+          </div>
+        </div>
+
+        <!-- Assigned Permissions Breakdown -->
+        <div style="margin-bottom: 18px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">
+            Active Permissions for Your Account:
+          </label>
+          <div id="profile-permissions-list" style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px; display: flex; justify-content: space-between; align-items: center;">
+          <button class="btn btn-sm btn-outline" onclick="window.KynosApp.closeModal('user-profile-modal')">Close Profile</button>
+          <button class="btn btn-sm btn-danger" onclick="window.KynosApp.closeModal('user-profile-modal'); window.KynosApp.exitToGateway();">
+            🚪 Sign Out of Account
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =====================================================================
+       MODAL 6: UNIQUE SAFETY AUTHENTICATION (OTP VERIFICATION)
+       ===================================================================== -->
+  <div id="otp-verification-modal" class="modal-overlay modal-hidden">
+    <div class="modal-dialog modal-dialog-otp">
+      <div class="modal-header" style="text-align: center; display: block; border-bottom: none; padding-bottom: 0;">
+        <div class="otp-shield-emblem" id="otp-shield-emblem">🛡️</div>
+        <h3 style="margin: 8px 0 4px 0; font-size: 1.3rem;" id="otp-modal-title">Unique Safety Authentication</h3>
+        <span class="role-pill role-pill-ngo" id="otp-role-badge" style="font-size: 11px;">VERIFICATION REQUIRED</span>
+      </div>
+
+      <div class="modal-body" style="padding: 16px 24px 24px 24px;">
+        <p style="font-size: 13.5px; color: var(--text-secondary); text-align: center; margin-bottom: 16px;" id="otp-instruction-text">
+          Enter the 6-digit security verification PIN sent to your registered email address.
+        </p>
+
+        <!-- Recipient Information Capsule -->
+        <div class="otp-recipient-box">
+          <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Sent Directly To:</div>
+          <div style="font-size: 14px; font-weight: 700; color: var(--primary);" id="otp-destination-display">user@example.com</div>
+          <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 2px;" id="otp-security-level-display">Real-Time Email Verification</div>
+        </div>
+
+        <!-- Email Security Dispatch Notification Banner -->
+        <div class="otp-dispatch-status-banner" id="otp-dispatch-status-banner" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 16px; text-align: left;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="font-size: 16px;">✉️</span>
+            <strong style="color: #10b981; font-size: 12.5px;" id="otp-banner-title">Security PIN Dispatched to Your Email</strong>
+          </div>
+          <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0; line-height: 1.45;" id="otp-banner-text">
+            A one-time 6-digit verification code has been dispatched to your email inbox. Please check your email (and Spam folder) to enter the code.
+          </p>
+        </div>
+
+        <!-- Invisible Firebase reCAPTCHA Container -->
+        <div id="recaptcha-container"></div>
+
+        <!-- 6-Digit PIN Inputs -->
+        <div class="otp-digits-container" id="otp-inputs-wrapper">
+          <input type="text" maxlength="1" class="otp-digit-input" id="otp-d1" inputmode="numeric" autocomplete="one-time-code" autofocus>
+          <input type="text" maxlength="1" class="otp-digit-input" id="otp-d2" inputmode="numeric">
+          <input type="text" maxlength="1" class="otp-digit-input" id="otp-d3" inputmode="numeric">
+          <input type="text" maxlength="1" class="otp-digit-input" id="otp-d4" inputmode="numeric">
+          <input type="text" maxlength="1" class="otp-digit-input" id="otp-d5" inputmode="numeric">
+          <input type="text" maxlength="1" class="otp-digit-input" id="otp-d6" inputmode="numeric">
+        </div>
+
+        <!-- Error Message Alert -->
+        <div id="otp-error-alert" class="alert alert-danger d-none" style="margin-top: 14px; font-size: 12.5px; padding: 8px 12px;"></div>
+
+        <!-- Verification Action Button -->
+        <button type="button" class="btn btn-primary btn-block" id="btn-verify-otp-submit" style="margin-top: 18px; padding: 13px; font-size: 15px; font-weight: 700;" onclick="window.KynosApp.submitOtpVerification()">
+          🔐 Verify &amp; Enter Secure Dashboard →
+        </button>
+
+        <!-- Resend and Cancel Row -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; font-size: 12px;">
+          <button type="button" class="btn-link" id="btn-resend-otp" onclick="window.KynosApp.resendOtpCode()" style="background: none; border: none; color: var(--primary); cursor: pointer; text-decoration: underline;">
+            🔄 Resend Code (<span id="otp-timer">30</span>s)
+          </button>
+          <button type="button" class="btn-link" onclick="window.KynosApp.cancelOtpVerification()" style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
+            ← Back to Sign In
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =====================================================================
+       MODAL 5: ADOPTION INTEREST
+       ===================================================================== -->
+  <div id="adoption-interest-modal" class="modal-overlay modal-hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Adopt <span id="adopt-modal-dog-name">Dog</span></h3>
+        <button class="btn-close-modal" onclick="window.KynosApp.closeModal('adoption-interest-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 16px;">
+          <img src="" id="adopt-modal-photo" style="width: 70px; height: 70px; border-radius: 8px; object-fit: cover;" alt="Dog">
+          <div>
+            <h4 id="adopt-modal-dog-id" style="font-family: monospace; color: var(--primary);">KYN-0000</h4>
+            <p style="font-size: 12px; color: var(--text-secondary);">Verified healthy, vaccinated, and sterilized.</p>
+          </div>
+        </div>
+
+        <div class="form-group mb-3">
+          <label>Your Full Name *</label>
+          <input type="text" id="adopt-app-name" class="form-control" required placeholder="Enter full name">
+        </div>
+
+        <div class="form-group mb-3">
+          <label>Phone / WhatsApp Number *</label>
+          <input type="tel" id="adopt-app-phone" class="form-control" required placeholder="+91 98...">
+        </div>
+
+        <div class="form-group mb-3">
+          <label>Tell us about your home & previous pet experience</label>
+          <textarea id="adopt-app-notes" class="form-control" rows="3" placeholder="Apartment / independent house, other pets..."></textarea>
+        </div>
+
+        <button class="btn btn-success" style="width: 100%;" onclick="window.KynosApp.submitAdoptionApplication()">
+          Submit Adoption Application
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =====================================================================
+       MODAL 6: LOG VACCINATION (VET GATED)
+       ===================================================================== -->
+  <div id="add-vaccine-modal" class="modal-overlay modal-hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>💉 Log Verified Vaccination Record</h3>
+        <button class="btn-close-modal" onclick="window.KynosApp.closeModal('add-vaccine-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group mb-3">
+          <label>Vaccine Type *</label>
+          <select id="vax-form-type" class="form-select">
+            <option value="Anti-Rabies (ARV)">Anti-Rabies (ARV) - Annual</option>
+            <option value="7-in-1 (DHPPiL)">7-in-1 (DHPPiL) - Multi-component</option>
+            <option value="Deworming (Oral)">Deworming (Albendazole / Drontal)</option>
+          </select>
+        </div>
+
+        <div class="form-group mb-3">
+          <label>Manufacturer Batch Number *</label>
+          <input type="text" id="vax-form-batch" class="form-control" placeholder="e.g. DEF-ARV-2026-90" value="DEF-ARV-2026-90">
+        </div>
+
+        <div class="form-group mb-3">
+          <label>Administration Date *</label>
+          <input type="date" id="vax-form-date" class="form-control" value="2026-09-06">
+        </div>
+
+        <div class="form-group mb-3">
+          <label>Next Booster Due Date *</label>
+          <input type="date" id="vax-form-due" class="form-control" value="2027-09-06">
+        </div>
+
+        <button class="btn btn-success" style="width: 100%;" onclick="window.KynosApp.submitVaccineLog()">
+          Verify & Save to Permanent Health Record
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =====================================================================
+       EXTERNAL LIBRARIES (LEAFLET, QRCODE, HTML5-QRCODE, CHART.JS)
+       ===================================================================== -->
+  <!-- Leaflet GIS Map -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  
+  <!-- QRCode.js (Local Vendor with CDN Fallback) -->
+  <script src="js/vendor/qrcode.min.js"></script>
+  <script>
+    if (!window.QRCode) {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>');
+    }
+  </script>
+
+  <!-- Html5Qrcode (Local Vendor with CDN Fallback) -->
+  <script src="js/vendor/html5-qrcode.min.js"></script>
+  <script>
+    if (!window.Html5Qrcode) {
+      document.write('<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"><\/script>');
+    }
+  </script>
+
+  <!-- Chart.js for Municipal Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Firebase Cloud Firestore SDK (Optional Cloud DB with Safe Offline Fallback) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <!-- Application Modules -->
+  <script src="js/state.js"></script>
+  <script src="js/rbac.js"></script>
+  <script src="js/qr-engine.js"></script>
+  <script src="js/dog-matcher.js"></script>
+  <script src="js/medical.js"></script>
+  <script src="js/emergency.js"></script>
+  <script src="js/map-analytics.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
