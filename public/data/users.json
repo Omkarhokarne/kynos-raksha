@@ -106,7 +106,7 @@
         "verified":  true,
         "otpVerified":  true,
         "createdAt":  "2026-09-14 23:48:02",
-        "lastLogin":  "2026-10-12 23:28:31",
+        "lastLogin":  "2026-10-13 10:40:57",
         "lastOtpVerification":  "2026-09-14 23:48:49"
     },
     {
@@ -192,5 +192,38 @@
         "createdAt":  "2026-10-13 00:09:14",
         "lastLogin":  "2026-10-13 00:39:24",
         "lastOtpVerification":  "2026-10-13 00:18:52"
+    },
+    {
+        "id":  "USR-20261013-104402",
+        "name":  "ram charan",
+        "email":  "ramcharanjatothu@gmail.com",
+        "password":  "Ramcharan@123",
+        "userType":  "ngo",
+        "userTypeTitle":  "Verified Animal Welfare NGO",
+        "organization":  "DELTRUST",
+        "licenseNo":  "DELTRUST",
+        "phone":  "+919441376738",
+        "avatar":  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
+        "verified":  true,
+        "otpVerified":  false,
+        "createdAt":  "2026-10-13 10:44:02",
+        "lastLogin":  "2026-10-13 10:44:02"
+    },
+    {
+        "id":  "USR-20261013-104459",
+        "name":  "ram charan",
+        "email":  "ramcharanjatothu204@gmail.com",
+        "password":  "Ramcharan@123",
+        "userType":  "ngo",
+        "userTypeTitle":  "Verified Animal Welfare NGO",
+        "organization":  "DELTRUST",
+        "licenseNo":  "DELTRUST",
+        "phone":  "+919441376738",
+        "avatar":  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
+        "verified":  true,
+        "otpVerified":  true,
+        "createdAt":  "2026-10-13 10:44:59",
+        "lastLogin":  "2026-10-13 10:46:28",
+        "lastOtpVerification":  "2026-10-13 10:46:28"
     }
 ]

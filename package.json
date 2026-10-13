@@ -6,5 +6,8 @@
     "build": "node build.js",
     "dev": "powershell -ExecutionPolicy Bypass -File .\\serve.ps1",
     "start": "powershell -ExecutionPolicy Bypass -File .\\serve.ps1"
+  },
+  "dependencies": {
+    "nodemailer": "^6.9.16"
   }
 }
